@@ -1,4 +1,4 @@
-import { CustomDataNode } from "./renderer";
+import { CustomDataNode, FormData } from "./renderer";
 
 // interface OriginalJsonStructure {
 //   name: string;
@@ -22,6 +22,92 @@ interface ConvertedJsonStructure {
     format?: string;
   };
 }
+
+const template = {
+  $metadata: {
+    uris: {
+      jsonLdContext: "https://example.com/path/to/file/context.jsonld",
+    },
+  },
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  properties: {
+    "@context": {
+      type: ["string", "array", "object"],
+    },
+    expirationDate: {
+      format: "date-time",
+      type: "string",
+    },
+    id: {
+      type: "string",
+    },
+    issuanceDate: {
+      format: "date-time",
+      type: "string",
+    },
+    issuer: {
+      type: ["string", "object"],
+      format: "uri",
+      properties: {
+        id: {
+          format: "uri",
+          type: "string",
+        },
+      },
+      required: ["id"],
+    },
+    type: {
+      type: ["string", "array"],
+      items: {
+        type: "string",
+      },
+    },
+    credentialSchema: {
+      properties: {
+        id: {
+          format: "uri",
+          type: "string",
+        },
+        type: {
+          type: "string",
+        },
+      },
+      required: ["id", "type"],
+      type: "object",
+    },
+    credentialStatus: {
+      description:
+        "Allows the discovery of information about the current status of the credential, such as whether it is suspended or revoked.",
+      title: "Credential Status",
+      properties: {
+        id: {
+          description: "Id URL of the credentialStatus.",
+          title: "Id",
+          format: "uri",
+          type: "string",
+        },
+        type: {
+          description:
+            "Expresses the credential status type (method). The value should provide enough information to determine the current status of the credential.",
+          title: "Type",
+          type: "string",
+        },
+      },
+      required: ["id", "type"],
+      type: "object",
+    },
+  },
+  required: [
+    "credentialSubject",
+    "@context",
+    "id",
+    "issuanceDate",
+    "issuer",
+    "type",
+    "credentialSchema",
+  ],
+  type: "object",
+};
 
 function convertJsonStructure(input: CustomDataNode): ConvertedJsonStructure {
   const convertedStructure: ConvertedJsonStructure = {};
@@ -69,4 +155,25 @@ function convertJsonStructure(input: CustomDataNode): ConvertedJsonStructure {
   return convertedStructure;
 }
 
-export default convertJsonStructure;
+function finalJsonMaker(input: CustomDataNode, formData: FormData) {
+  const convertedStructure = convertJsonStructure(input);
+  const finalJson = {
+    ...template,
+    $metadata: {
+      ...template.$metadata,
+      version: formData.version,
+      type: formData.schemaType,
+    },
+    title: formData.title,
+    description: formData.description,
+    properties: {
+      ...template.properties,
+      ...convertedStructure,
+    },
+    required: convertedStructure[input.name].required,
+  };
+
+  return finalJson;
+}
+
+export default finalJsonMaker;

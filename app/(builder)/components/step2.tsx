@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CustomDataNode } from "./renderer";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -35,11 +36,12 @@ const formSchema = z.object({
 });
 
 interface Step2Props {
+  setStep: React.Dispatch<React.SetStateAction<number>>;
   treeData: CustomDataNode[];
   setTreeData: React.Dispatch<React.SetStateAction<CustomDataNode[]>>;
 }
 
-const Step2: React.FC<Step2Props> = ({ treeData, setTreeData }) => {
+const Step2: React.FC<Step2Props> = ({ setStep, treeData, setTreeData }) => {
   const [selectedNode, setSelectedNode] = useState<CustomDataNode | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -63,7 +65,7 @@ const Step2: React.FC<Step2Props> = ({ treeData, setTreeData }) => {
         icon: <Folder size={15} className="mt-[0.35rem]" />,
         dataType: "object",
         description: "My attribute description",
-        required: true,
+        required: false,
       });
       return;
     }
@@ -96,7 +98,7 @@ const Step2: React.FC<Step2Props> = ({ treeData, setTreeData }) => {
       title: node.title,
       dataType: node.dataType,
       description: node.description,
-      required: false,
+      required: node.required,
     });
   };
 
@@ -209,7 +211,11 @@ const Step2: React.FC<Step2Props> = ({ treeData, setTreeData }) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Data type</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  disabled={form.formState.isSubmitting}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue />
@@ -246,6 +252,24 @@ const Step2: React.FC<Step2Props> = ({ treeData, setTreeData }) => {
             )}
           />
 
+          <FormField
+            control={form.control}
+            name="required"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-right">Required</FormLabel>
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={form.formState.isSubmitting}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button onClick={() => setStep(1)}>Back</Button>
           <Button type="submit">Save</Button>
         </form>
       </Form>

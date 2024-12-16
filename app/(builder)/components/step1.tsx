@@ -19,10 +19,15 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { FormData } from "./renderer";
+import { ArrowRight } from "lucide-react";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  schemaType: z.string().min(1, "Schema type is required"),
+  schemaType: z
+    .string()
+    .min(1, "Schema type is required")
+    .refine((s) => !s.includes(" "), "No Spaces!"),
   version: z.string().min(1, "Version is required"),
   description: z.string().min(1, "Description is required"),
   credentialType: z.enum(["Merklized", "Non-merklized"]),
@@ -30,19 +35,21 @@ const formSchema = z.object({
 
 export default function Step1({
   setStep,
+  formData,
   setFormData,
 }: Readonly<{
-  setStep: (step: number) => void;
+  setStep: React.Dispatch<React.SetStateAction<number>>;
+  formData: FormData;
   setFormData: (data: z.infer<typeof formSchema>) => void;
 }>) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      schemaType: "",
-      version: "",
-      description: "",
-      credentialType: "Merklized",
+      title: formData.title,
+      schemaType: formData.schemaType,
+      version: formData.version,
+      description: formData.description,
+      credentialType: formData.credentialType,
     },
   });
 
@@ -54,6 +61,7 @@ export default function Step1({
 
   return (
     <Form {...form}>
+      <h1 className="text-md font-bold pb-4">Define schema</h1>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
@@ -66,6 +74,7 @@ export default function Step1({
                   placeholder="Enter Title"
                   {...field}
                   disabled={form.formState.isSubmitting}
+                  onBlur={() => form.trigger("title")}
                 />
               </FormControl>
               <FormMessage />
@@ -83,6 +92,7 @@ export default function Step1({
                 <Input
                   placeholder="Enter schema type"
                   {...field}
+                  onBlur={() => form.trigger("schemaType")}
                   disabled={form.formState.isSubmitting}
                 />
               </FormControl>
@@ -102,6 +112,7 @@ export default function Step1({
                   placeholder="Enter version"
                   {...field}
                   disabled={form.formState.isSubmitting}
+                  onBlur={() => form.trigger("version")}
                 />
               </FormControl>
               <FormMessage />
@@ -120,6 +131,7 @@ export default function Step1({
                   placeholder="Enter description"
                   {...field}
                   disabled={form.formState.isSubmitting}
+                  onBlur={() => form.trigger("description")}
                 />
               </FormControl>
               <FormMessage />
@@ -143,6 +155,7 @@ export default function Step1({
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                         className="flex flex-col space-y-1"
+                        onBlur={() => form.trigger("credentialType")}
                       >
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
@@ -169,8 +182,12 @@ export default function Step1({
             </AccordionContent>
           </AccordionItem>
         </Accordion>
-
-        <Button type="submit">Define attributes</Button>
+        <div className="flex w-full justify-end">
+          <Button type="submit">
+            Define attributes
+            <ArrowRight />
+          </Button>
+        </div>
       </form>
     </Form>
   );

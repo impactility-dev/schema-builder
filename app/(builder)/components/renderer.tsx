@@ -13,7 +13,7 @@ export interface FormData {
   schemaType: string;
   version: string;
   description: string;
-  credentialType: string;
+  credentialType: "Merklized" | "Non-merklized";
 }
 
 export interface CustomDataNode extends TreeDataNode {
@@ -62,13 +62,27 @@ const Renderer = () => {
   const [treeData, setTreeData] = useState<CustomDataNode[]>(seedTreeData);
 
   return (
-    <div>
-      {step === 2 ? (
-        <Step1 setStep={setStep} setFormData={setFormData} />
-      ) : (
-        <Step2 treeData={treeData} setTreeData={setTreeData} />
-      )}
-      {/* <Preview formData={formData} treeData={treeData} /> */}
+    <div className="h-[900px] py-6">
+      <div className="grid grid-cols-2 gap-8 h-full">
+        <div className="overflow-auto" id="left">
+          {step === 1 ? (
+            <Step1
+              setStep={setStep}
+              setFormData={setFormData}
+              formData={formData}
+            />
+          ) : (
+            <Step2
+              setStep={setStep}
+              treeData={treeData}
+              setTreeData={setTreeData}
+            />
+          )}
+        </div>
+        <div className="overflow-auto max-h-full" id="right">
+          <Preview formData={formData} treeData={treeData} />
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,6 +1,6 @@
-import convertJsonStructure from "./helper";
+import finalJsonMaker from "./helper";
 import { CustomDataNode, FormData } from "./renderer";
-import { CopyBlock } from "react-code-blocks";
+import { CodeBlock } from "react-code-blocks";
 
 const Preview = ({
   formData,
@@ -9,14 +9,10 @@ const Preview = ({
   formData: FormData;
   treeData: CustomDataNode[];
 }) => {
-  console.log(JSON.stringify(treeData[0], null, 2));
-  console.log(JSON.stringify(convertJsonStructure(treeData[0]), null, 2));
   return (
     <div>
-      <h1>Preview</h1>
-      <p>Preview content</p>
-      <CopyBlock
-        text={JSON.stringify(convertJsonStructure(treeData[0]), null, 2)}
+      <CodeBlock
+        text={JSON.stringify(finalJsonMaker(treeData[0], formData), null, 2)}
         language={"json"}
         showLineNumbers={false}
         wrapLongLines={true}
