@@ -23,7 +23,7 @@ interface ConvertedJsonStructure {
   };
 }
 
-const template = {
+const jsonTemplate = {
   $metadata: {
     uris: {
       jsonLdContext: "https://example.com/path/to/file/context.jsonld",
@@ -109,6 +109,47 @@ const template = {
   type: "object",
 };
 
+const jsonLDTemplate = {
+  "@context": [
+    {
+      "@protected": true,
+      "@version": 1.1,
+      id: "@id",
+      type: "@type",
+      schemaType: {
+        "@context": {
+          "@propagate": true,
+          "@protected": true,
+          "polygon-vocab": "urn:uuid:ca85de13-59c7-42cb-80a6-ebaa37df53d7#",
+          xsd: "http://www.w3.org/2001/XMLSchema#",
+          folder: {
+            "@context": {
+              string: {
+                "@id": "polygon-vocab:string",
+                "@type": "xsd:string",
+              },
+              boolean: {
+                "@id": "polygon-vocab:boolean",
+                "@type": "xsd:boolean",
+              },
+            },
+            "@id": "polygon-vocab:folder",
+          },
+          testerNumber: {
+            "@id": "polygon-vocab:testerNumber",
+            "@type": "xsd:double",
+          },
+          interger: {
+            "@id": "polygon-vocab:interger",
+            "@type": "xsd:integer",
+          },
+        },
+        "@id": "urn:uuid:1d6d1c71-67bf-488f-b785-1f46485bdc9b",
+      },
+    },
+  ],
+};
+
 function convertJsonStructure(input: CustomDataNode): ConvertedJsonStructure {
   const convertedStructure: ConvertedJsonStructure = {};
 
@@ -158,16 +199,16 @@ function convertJsonStructure(input: CustomDataNode): ConvertedJsonStructure {
 function finalJsonMaker(input: CustomDataNode, formData: FormData) {
   const convertedStructure = convertJsonStructure(input);
   const finalJson = {
-    ...template,
+    ...jsonTemplate,
     $metadata: {
-      ...template.$metadata,
+      ...jsonTemplate.$metadata,
       version: formData.version,
       type: formData.schemaType,
     },
     title: formData.title,
     description: formData.description,
     properties: {
-      ...template.properties,
+      ...jsonTemplate.properties,
       ...convertedStructure,
     },
     required: convertedStructure[input.name].required,
@@ -176,4 +217,11 @@ function finalJsonMaker(input: CustomDataNode, formData: FormData) {
   return finalJson;
 }
 
-export default finalJsonMaker;
+function finalJsonLDMaker(input: CustomDataNode, formData: FormData) {
+  const finalJsonLD = {
+    ...jsonLDTemplate,
+  };
+
+  return finalJsonLD;
+}
+export { finalJsonMaker, finalJsonLDMaker };

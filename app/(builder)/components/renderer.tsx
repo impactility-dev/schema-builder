@@ -7,6 +7,13 @@ import { TreeDataNode } from "antd";
 import { v4 as uuidv4 } from "uuid";
 import { File, Folder } from "lucide-react";
 import Preview from "./preview";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export interface FormData {
   title: string;
@@ -60,9 +67,10 @@ const Renderer = () => {
   });
 
   const [treeData, setTreeData] = useState<CustomDataNode[]>(seedTreeData);
+  const [isViewJson, setIsViewJson] = useState(true);
 
   return (
-    <div className="h-[900px] py-6">
+    <div className="h-[650px] py-6">
       <div className="grid grid-cols-2 gap-8 h-full">
         <div className="overflow-auto" id="left">
           {step === 1 ? (
@@ -80,7 +88,28 @@ const Renderer = () => {
           )}
         </div>
         <div className="overflow-auto max-h-full" id="right">
-          <Preview formData={formData} treeData={treeData} />
+          <div className="flex justify-between items-center pb-8">
+            <h1 className="text-md font-bold pb-4">Preview</h1>
+            <div className="pr-4">
+              <Select
+                value={isViewJson ? "json" : "jsonLD"}
+                onValueChange={(value) => setIsViewJson(value === "json")}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="json">Json</SelectItem>
+                  <SelectItem value="jsonLD">Json-ld</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <Preview
+            formData={formData}
+            treeData={treeData}
+            isViewJson={isViewJson}
+          />
         </div>
       </div>
     </div>
