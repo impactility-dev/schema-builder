@@ -75,17 +75,17 @@ const Renderer = () => {
     JSON.stringify(finalJsonMaker(treeData[0], formData), null, 2)
   );
 
-  const handleSelectChange = (value: string) => {
-    setIsViewJson(value === "json");
-    const text = JSON.stringify(
-      value === "json"
-        ? finalJsonMaker(treeData[0], formData)
-        : finalJsonLDMaker(treeData[0], formData),
-      null,
-      2
+  useEffect(() => {
+    setCopyData(
+      JSON.stringify(
+        isViewJson
+          ? finalJsonMaker(treeData[0], formData)
+          : finalJsonLDMaker(treeData[0], formData),
+        null,
+        2
+      )
     );
-    setCopyData(text);
-  };
+  }, [treeData, formData, isViewJson]);
 
   const [code, setCode] = useState("");
 
@@ -126,7 +126,7 @@ const Renderer = () => {
             <div className="pr-4 flex gap-2">
               <Select
                 value={isViewJson ? "json" : "jsonLD"}
-                onValueChange={(value) => handleSelectChange(value)}
+                onValueChange={(value) => setIsViewJson(value === "json")}
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue />
