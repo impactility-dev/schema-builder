@@ -14,6 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { finalJsonLDMaker, finalJsonMaker } from "./helper";
 
 export interface FormData {
   title: string;
@@ -68,6 +70,21 @@ const Renderer = () => {
 
   const [treeData, setTreeData] = useState<CustomDataNode[]>(seedTreeData);
   const [isViewJson, setIsViewJson] = useState(true);
+  const [copyData, setCopyData] = useState<string>(
+    JSON.stringify(finalJsonMaker(treeData[0], formData), null, 2)
+  );
+
+  const handleSelectChange = (value: string) => {
+    setIsViewJson(value === "json");
+    const text = JSON.stringify(
+      value === "json"
+        ? finalJsonMaker(treeData[0], formData)
+        : finalJsonLDMaker(treeData[0], formData),
+      null,
+      2
+    );
+    setCopyData(text);
+  };
 
   return (
     <div className="h-[calc(100vh-170px)] py-4">
@@ -87,13 +104,13 @@ const Renderer = () => {
             />
           )}
         </div>
-        <div className="overflow-auto max-h-full" id="right">
-          <div className="flex justify-between items-center pb-8">
-            <h1 className="text-md font-bold pb-4">Preview</h1>
+        <div className="overflow-hidden flex flex-col" id="right">
+          <div className="flex justify-between items-center pb-4">
+            <h1 className="text-md font-bold">Preview</h1>
             <div className="pr-4">
               <Select
                 value={isViewJson ? "json" : "jsonLD"}
-                onValueChange={(value) => setIsViewJson(value === "json")}
+                onValueChange={(value) => handleSelectChange(value)}
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue />
@@ -105,11 +122,39 @@ const Renderer = () => {
               </Select>
             </div>
           </div>
-          <Preview
-            formData={formData}
-            treeData={treeData}
-            isViewJson={isViewJson}
-          />
+          <div className="overflow-auto flex-1">
+            <Preview text={copyData} />
+          </div>
+          <div className="flex justify-between items-center pt-8">
+            <div></div>
+            <div className="flex space-x-4">
+              <Button
+                onClick={() => {
+                  navigator.clipboard.writeText(copyData);
+                }}
+                variant={"outline"}
+              >
+                Copy
+              </Button>
+              <Button
+                onClick={() => {
+                  const blob = new Blob([copyData], {
+                    type: "text/plain",
+                  });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `${formData.schemaType || "credential"}.${
+                    isViewJson ? "json" : "jsonld"
+                  }`;
+                  a.click();
+                }}
+                disabled={!copyData || formData.schemaType === ""}
+              >
+                Download {isViewJson ? "Json" : "Jsonld"} File
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
