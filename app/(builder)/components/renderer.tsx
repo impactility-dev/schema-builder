@@ -71,6 +71,21 @@ const Renderer = () => {
 
   const [treeData, setTreeData] = useState<CustomDataNode[]>(seedTreeData);
   const [isViewJson, setIsViewJson] = useState(true);
+  const [copyData, setCopyData] = useState<string>(
+    JSON.stringify(finalJsonMaker(treeData[0], formData), null, 2)
+  );
+
+  const handleSelectChange = (value: string) => {
+    setIsViewJson(value === "json");
+    const text = JSON.stringify(
+      value === "json"
+        ? finalJsonMaker(treeData[0], formData)
+        : finalJsonLDMaker(treeData[0], formData),
+      null,
+      2
+    );
+    setCopyData(text);
+  };
 
   const [code, setCode] = useState("");
 
@@ -111,7 +126,7 @@ const Renderer = () => {
             <div className="pr-4 flex gap-2">
               <Select
                 value={isViewJson ? "json" : "jsonLD"}
-                onValueChange={(value) => setIsViewJson(value === "json")}
+                onValueChange={(value) => handleSelectChange(value)}
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue />
