@@ -62,7 +62,7 @@ export default function Step1({
   return (
     <Form {...form}>
       <h1 className="text-md font-bold pb-4">Define schema</h1>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 px-4">
         <FormField
           control={form.control}
           name="title"

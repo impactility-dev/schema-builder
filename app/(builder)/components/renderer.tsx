@@ -70,8 +70,8 @@ const Renderer = () => {
   const [isViewJson, setIsViewJson] = useState(true);
 
   return (
-    <div className="h-[650px] py-6">
-      <div className="grid grid-cols-2 gap-8 h-full">
+    <div className="h-[calc(100vh-170px)] py-4">
+      <div className="grid grid-cols-2 gap-6 h-full">
         <div className="overflow-auto" id="left">
           {step === 1 ? (
             <Step1

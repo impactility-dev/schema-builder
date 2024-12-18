@@ -136,28 +136,36 @@ const Step2: React.FC<Step2Props> = ({ setStep, treeData, setTreeData }) => {
 
   return (
     <div>
-      <Button
-        disabled={selectedNode === null || selectedNode.dataType !== "object"}
-        onClick={() => {
-          const tree = treeData[0];
+      <div className="flex justify-between items-center">
+        <div></div>
+        <div className="flex gap-4">
+          <Button
+            disabled={
+              selectedNode === null || selectedNode.dataType !== "object"
+            }
+            onClick={() => {
+              const tree = treeData[0];
 
-          findAndAdd(tree);
-          setTreeData([tree]);
-        }}
-      >
-        Add
-      </Button>
-      <Button
-        disabled={selectedNode === null}
-        onClick={() => {
-          const tree = treeData[0];
+              findAndAdd(tree);
+              setTreeData([tree]);
+            }}
+          >
+            Add
+          </Button>
+          <Button
+            disabled={selectedNode === null}
+            onClick={() => {
+              const tree = treeData[0];
 
-          findAndRemove(tree);
-          setTreeData([tree]);
-        }}
-      >
-        Remove
-      </Button>
+              findAndRemove(tree);
+              setTreeData([tree]);
+            }}
+            variant={"destructive"}
+          >
+            Remove
+          </Button>
+        </div>
+      </div>
       <Tree
         defaultExpandAll
         autoExpandParent
@@ -256,21 +264,30 @@ const Step2: React.FC<Step2Props> = ({ setStep, treeData, setTreeData }) => {
             control={form.control}
             name="required"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="flex items-center gap-2">
                 <FormLabel className="text-right">Required</FormLabel>
                 <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    disabled={form.formState.isSubmitting}
-                  />
+                  <div style={{ marginBottom: "0.4rem" }}>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      disabled={form.formState.isSubmitting}
+                    />
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button onClick={() => setStep(1)}>Back</Button>
-          <Button type="submit">Save</Button>
+          <div className="flex justify-between">
+            <div></div>
+            <div className="flex gap-4">
+              <Button onClick={() => setStep(1)} variant={"outline"}>
+                Back
+              </Button>
+              <Button type="submit">Save</Button>
+            </div>
+          </div>
         </form>
       </Form>
     </div>

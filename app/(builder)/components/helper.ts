@@ -23,6 +23,14 @@ interface ConvertedJsonStructure {
   };
 }
 
+interface ConvertedJsonLDStructure {
+  [key: string]: {
+    "@id": string;
+    "@type"?: string;
+    "@context"?: ConvertedJsonLDStructure;
+  };
+}
+
 const jsonTemplate = {
   $metadata: {
     uris: {
@@ -116,38 +124,18 @@ const jsonLDTemplate = {
       "@version": 1.1,
       id: "@id",
       type: "@type",
-      schemaType: {
-        "@context": {
-          "@propagate": true,
-          "@protected": true,
-          "polygon-vocab": "urn:uuid:ca85de13-59c7-42cb-80a6-ebaa37df53d7#",
-          xsd: "http://www.w3.org/2001/XMLSchema#",
-          folder: {
-            "@context": {
-              string: {
-                "@id": "polygon-vocab:string",
-                "@type": "xsd:string",
-              },
-              boolean: {
-                "@id": "polygon-vocab:boolean",
-                "@type": "xsd:boolean",
-              },
-            },
-            "@id": "polygon-vocab:folder",
-          },
-          testerNumber: {
-            "@id": "polygon-vocab:testerNumber",
-            "@type": "xsd:double",
-          },
-          interger: {
-            "@id": "polygon-vocab:interger",
-            "@type": "xsd:integer",
-          },
-        },
-        "@id": "urn:uuid:1d6d1c71-67bf-488f-b785-1f46485bdc9b",
-      },
     },
   ],
+};
+
+const LDContextTemplate = {
+  "@context": {
+    "@propagate": true,
+    "@protected": true,
+    "polygon-vocab": "urn:uuid:9516a26e-0576-4692-bda7-d512c205c4ac#",
+    xsd: "http://www.w3.org/2001/XMLSchema#",
+  },
+  "@id": "urn:uuid:8812747b-de76-4639-ae32-2605f3ff20b2",
 };
 
 function convertJsonStructure(input: CustomDataNode): ConvertedJsonStructure {
@@ -180,8 +168,8 @@ function convertJsonStructure(input: CustomDataNode): ConvertedJsonStructure {
           description: child.description,
         };
 
-        // Add special handling for string type
-        if (child.dataType === "string") {
+        // Add special handling for id
+        if (child.name === "id") {
           convertedStructure[input.name].properties![child.name].format = "uri";
         }
       }
@@ -189,6 +177,41 @@ function convertJsonStructure(input: CustomDataNode): ConvertedJsonStructure {
       // Add to required array if the child is required
       if (child.required) {
         convertedStructure[input.name].required!.push(child.name);
+      }
+    });
+  }
+
+  return convertedStructure;
+}
+
+function convertJsonLDStructure(
+  input: CustomDataNode
+): ConvertedJsonLDStructure {
+  const convertedStructure: ConvertedJsonLDStructure = {};
+
+  // Main object conversion
+  convertedStructure[input.name] = {
+    "@id": "polygon-vocab:" + input.name,
+    "@context": {},
+  };
+
+  // Process children recursively
+  if (input.children && input.children.length > 0) {
+    input.children.forEach((child) => {
+      // Recursive conversion for nested properties
+      if (child.dataType === "object") {
+        const nestedObject = convertJsonLDStructure(child);
+        convertedStructure[input.name]["@context"] = {
+          ...convertedStructure[input.name]["@context"],
+          ...nestedObject,
+        };
+      } else {
+        // Handle primitive types
+        convertedStructure[input.name]["@context"]![child.name] = {
+          "@id": "polygon-vocab:" + child.name,
+          "@type":
+            "xsd:" + (child.dataType === "number" ? "double" : child.dataType),
+        };
       }
     });
   }
@@ -218,10 +241,24 @@ function finalJsonMaker(input: CustomDataNode, formData: FormData) {
 }
 
 function finalJsonLDMaker(input: CustomDataNode, formData: FormData) {
+  const convertedStructure = convertJsonLDStructure(input);
+  if (convertedStructure.credentialSubject["@context"]) {
+    delete convertedStructure.credentialSubject["@context"].id;
+  }
+  let LDContext = LDContextTemplate;
+  LDContext = {
+    ...LDContext,
+    "@context": {
+      ...LDContext["@context"],
+      ...convertedStructure.credentialSubject["@context"],
+    },
+  };
+  const schemaType = formData.schemaType;
   const finalJsonLD = {
-    ...jsonLDTemplate,
+    ...jsonLDTemplate["@context"][0],
+    [schemaType]: LDContext,
   };
 
-  return finalJsonLD;
+  return { "@context": [finalJsonLD] };
 }
 export { finalJsonMaker, finalJsonLDMaker };
