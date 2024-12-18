@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Step1 from "./step1";
 import Step2 from "./step2";
 import { TreeDataNode } from "antd";
@@ -74,17 +74,17 @@ const Renderer = () => {
     JSON.stringify(finalJsonMaker(treeData[0], formData), null, 2)
   );
 
-  const handleSelectChange = (value: string) => {
-    setIsViewJson(value === "json");
-    const text = JSON.stringify(
-      value === "json"
-        ? finalJsonMaker(treeData[0], formData)
-        : finalJsonLDMaker(treeData[0], formData),
-      null,
-      2
+  useEffect(() => {
+    setCopyData(
+      JSON.stringify(
+        isViewJson
+          ? finalJsonMaker(treeData[0], formData)
+          : finalJsonLDMaker(treeData[0], formData),
+        null,
+        2
+      )
     );
-    setCopyData(text);
-  };
+  }, [treeData, formData, isViewJson]);
 
   return (
     <div className="h-[calc(100vh-170px)] py-4">
@@ -110,7 +110,7 @@ const Renderer = () => {
             <div className="pr-4">
               <Select
                 value={isViewJson ? "json" : "jsonLD"}
-                onValueChange={(value) => handleSelectChange(value)}
+                onValueChange={(value) => setIsViewJson(value === "json")}
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue />
