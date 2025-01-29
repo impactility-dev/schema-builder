@@ -54,7 +54,6 @@ export default function Step1({
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
     setFormData(values);
     setStep(2);
   };

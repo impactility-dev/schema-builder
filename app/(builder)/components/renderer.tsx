@@ -71,21 +71,6 @@ const Renderer = () => {
 
   const [treeData, setTreeData] = useState<CustomDataNode[]>(seedTreeData);
   const [isViewJson, setIsViewJson] = useState(true);
-  const [copyData, setCopyData] = useState<string>(
-    JSON.stringify(finalJsonMaker(treeData[0], formData), null, 2)
-  );
-
-  useEffect(() => {
-    setCopyData(
-      JSON.stringify(
-        isViewJson
-          ? finalJsonMaker(treeData[0], formData)
-          : finalJsonLDMaker(treeData[0], formData),
-        null,
-        2
-      )
-    );
-  }, [treeData, formData, isViewJson]);
 
   const [code, setCode] = useState("");
 
@@ -102,9 +87,9 @@ const Renderer = () => {
   }, [formData, treeData, isViewJson]);
 
   return (
-    <div className="h-[700px] py-6">
+    <div className="h-[calc(100vh-124px)] py-4">
       <div><Toaster /></div>
-      <div className="grid grid-cols-2 gap-8 h-full">
+      <div className="grid grid-cols-2 gap-6 h-full">
         <div className="overflow-auto" id="left">
           {step === 1 ? (
             <Step1
@@ -120,10 +105,10 @@ const Renderer = () => {
             />
           )}
         </div>
-        <div className="overflow-auto max-h-full" id="right">
-          <div className="flex justify-between items-center pb-8">
+        <div className="overflow-hidden flex flex-col" id="right">
+          <div className="flex justify-between items-center pb-3">
             <h1 className="text-md font-bold pb-4">Preview</h1>
-            <div className="pr-4 flex gap-2">
+            <div className="flex gap-2">
               <Select
                 value={isViewJson ? "json" : "jsonLD"}
                 onValueChange={(value) => setIsViewJson(value === "json")}
@@ -173,18 +158,11 @@ const Renderer = () => {
               </Button>
             </div>
           </div>
-          {step === 1 ? (
-            <div className="text-center">
-              <h1 className="text-lg font-bold">Fill the form to preview</h1>
-            </div>
-          ) : (
-            <Preview
-              formData={formData}
-              treeData={treeData}
-              isViewJson={isViewJson}
-            />
-          )}
-
+          <Preview
+            formData={formData}
+            treeData={treeData}
+            isViewJson={isViewJson}
+          />
         </div>
       </div>
     </div>

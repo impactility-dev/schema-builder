@@ -24,18 +24,15 @@ const Preview = ({
         2
       )
     );
-    console.log("treeData", treeData[0]);
   }, [formData, treeData, isViewJson]);
 
   return (
-    <div>
-      <CodeBlock
-        text={code}
-        language={"json"}
-        showLineNumbers={false}
-        wrapLongLines={true}
-      />
-    </div>
+    <CodeBlock
+      text={code}
+      language={"json"}
+      showLineNumbers={false}
+      wrapLongLines={true}
+    />
   );
 };
 
