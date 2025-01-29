@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Step1 from "./step1";
 import Step2 from "./step2";
 import { TreeDataNode } from "antd";
 import { v4 as uuidv4 } from "uuid";
-import { File, Folder } from "lucide-react";
+import { Copy, Download, File, Folder } from "lucide-react";
 import Preview from "./preview";
+import toast, { Toaster } from "react-hot-toast";
 import {
   Select,
   SelectContent,
@@ -14,6 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { finalJsonLDMaker, finalJsonMaker } from "./helper";
 
 export interface FormData {
   title: string;
@@ -35,7 +38,7 @@ export interface CustomDataNode extends TreeDataNode {
 const seedTreeData: CustomDataNode[] = [
   {
     name: "credentialSubject",
-    title: "Credential Subject",
+    title: "Credential subject",
     description: "Stores the data of the credential",
     key: uuidv4(),
     icon: <Folder size={15} className="mt-[0.35rem]" />,
@@ -69,8 +72,23 @@ const Renderer = () => {
   const [treeData, setTreeData] = useState<CustomDataNode[]>(seedTreeData);
   const [isViewJson, setIsViewJson] = useState(true);
 
+  const [code, setCode] = useState("");
+
+  useEffect(() => {
+    setCode(
+      JSON.stringify(
+        isViewJson
+          ? finalJsonMaker(treeData[0], formData)
+          : finalJsonLDMaker(treeData[0], formData),
+        null,
+        2
+      )
+    );
+  }, [formData, treeData, isViewJson]);
+
   return (
-    <div className="h-[650px] py-6">
+    <div className="h-[700px] py-6">
+      <div><Toaster /></div>
       <div className="grid grid-cols-2 gap-8 h-full">
         <div className="overflow-auto" id="left">
           {step === 1 ? (
@@ -90,7 +108,7 @@ const Renderer = () => {
         <div className="overflow-auto max-h-full" id="right">
           <div className="flex justify-between items-center pb-8">
             <h1 className="text-md font-bold pb-4">Preview</h1>
-            <div className="pr-4">
+            <div className="pr-4 flex gap-2">
               <Select
                 value={isViewJson ? "json" : "jsonLD"}
                 onValueChange={(value) => setIsViewJson(value === "json")}
@@ -103,13 +121,55 @@ const Renderer = () => {
                   <SelectItem value="jsonLD">Json-ld</SelectItem>
                 </SelectContent>
               </Select>
+
+              <Button variant="outline" disabled={
+                formData.title === ""
+              } onClick={() => {
+                navigator.clipboard.writeText(
+                  code
+                ).then(() => {
+                  toast.success("Copied to clipboard");
+                });
+
+              }}>
+                Copy
+                <Copy size={15} className="ml-2" />
+              </Button>
+              <Button
+                disabled={
+                  formData.title === ""
+                }
+                onClick={() => {
+                  const element = document.createElement("a");
+                  const file = new Blob(
+                    [
+                      code
+                    ],
+                    { type: "application/json" }
+                  );
+                  element.href = URL.createObjectURL(file);
+                  element.download = isViewJson ? `${formData.title}_json.json` : `${formData.title}_json-ld.jsonld`;
+                  document.body.appendChild(element);
+                  element.click()
+                  toast.success("Downloaded");
+                }}>
+                Download
+                <Download size={15} className="ml-2" />
+              </Button>
             </div>
           </div>
-          <Preview
-            formData={formData}
-            treeData={treeData}
-            isViewJson={isViewJson}
-          />
+          {step === 1 ? (
+            <div className="text-center">
+              <h1 className="text-lg font-bold">Fill the form to preview</h1>
+            </div>
+          ) : (
+            <Preview
+              formData={formData}
+              treeData={treeData}
+              isViewJson={isViewJson}
+            />
+          )}
+
         </div>
       </div>
     </div>

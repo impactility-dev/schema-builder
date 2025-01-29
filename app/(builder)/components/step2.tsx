@@ -136,6 +136,7 @@ const Step2: React.FC<Step2Props> = ({ setStep, treeData, setTreeData }) => {
 
   return (
     <div>
+      <div className="flex gap-2">
       <Button
         disabled={selectedNode === null || selectedNode.dataType !== "object"}
         onClick={() => {
@@ -157,7 +158,7 @@ const Step2: React.FC<Step2Props> = ({ setStep, treeData, setTreeData }) => {
         }}
       >
         Remove
-      </Button>
+      </Button></div>
       <Tree
         defaultExpandAll
         autoExpandParent
@@ -269,8 +270,9 @@ const Step2: React.FC<Step2Props> = ({ setStep, treeData, setTreeData }) => {
               </FormItem>
             )}
           />
+          <div className="flex gap-2">
           <Button onClick={() => setStep(1)}>Back</Button>
-          <Button type="submit">Save</Button>
+          <Button type="submit">Save</Button></div>
         </form>
       </Form>
     </div>
