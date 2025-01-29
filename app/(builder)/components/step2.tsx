@@ -149,10 +149,13 @@ const Step2: React.FC<Step2Props> = ({ setStep, treeData, setTreeData }) => {
           Add
         </Button>
         <Button
-          disabled={selectedNode === null}
+          disabled={
+            selectedNode === null ||
+            selectedNode.name === "id" ||
+            selectedNode.name === "credentialSubject"
+          }
           onClick={() => {
             const tree = treeData[0];
-
             findAndRemove(tree);
             setTreeData([tree]);
           }}
