@@ -71,21 +71,6 @@ const Renderer = () => {
 
   const [treeData, setTreeData] = useState<CustomDataNode[]>(seedTreeData);
   const [isViewJson, setIsViewJson] = useState(true);
-  const [copyData, setCopyData] = useState<string>(
-    JSON.stringify(finalJsonMaker(treeData[0], formData), null, 2)
-  );
-
-  useEffect(() => {
-    setCopyData(
-      JSON.stringify(
-        isViewJson
-          ? finalJsonMaker(treeData[0], formData)
-          : finalJsonLDMaker(treeData[0], formData),
-        null,
-        2
-      )
-    );
-  }, [treeData, formData, isViewJson]);
 
   const [code, setCode] = useState("");
 
