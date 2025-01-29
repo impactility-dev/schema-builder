@@ -87,7 +87,7 @@ const Renderer = () => {
   }, [formData, treeData, isViewJson]);
 
   return (
-    <div className="h-[calc(100vh-124px)] py-4">
+    <div className="h-[calc(100vh-104px)] py-4">
       <div><Toaster /></div>
       <div className="grid grid-cols-2 gap-6 h-full">
         <div className="overflow-auto" id="left">
