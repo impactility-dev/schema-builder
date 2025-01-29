@@ -1,17 +1,5 @@
 import { CustomDataNode, FormData } from "./renderer";
 
-// interface OriginalJsonStructure {
-//   name: string;
-//   title: string;
-//   description?: string;
-//   key: string;
-//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//   icon?: any;
-//   dataType: string;
-//   required?: boolean;
-//   children?: OriginalJsonStructure[];
-// }
-
 interface ConvertedJsonStructure {
   [key: string]: {
     type: string;
@@ -24,11 +12,11 @@ interface ConvertedJsonStructure {
 }
 
 interface ConvertedJsonLDStructure {
-  [key: string]: {
-    "@id": string;
-    "@type"?: string;
-    "@context"?: ConvertedJsonLDStructure;
-  };
+  "@context"?: {
+    [key: string]: ConvertedJsonLDStructure;
+  }
+  "@id": string;
+  "@type"?: string;
 }
 
 const jsonTemplate = {
@@ -128,15 +116,16 @@ const jsonLDTemplate = {
   ],
 };
 
-const LDContextTemplate = {
+const jsonLDSchemaContext = {
   "@context": {
     "@propagate": true,
     "@protected": true,
-    "polygon-vocab": "urn:uuid:9516a26e-0576-4692-bda7-d512c205c4ac#",
-    xsd: "http://www.w3.org/2001/XMLSchema#",
+    "polygon-vocab": "urn:uuid:8301b386-484d-4845-80cf-8491802bb228#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
   },
-  "@id": "urn:uuid:8812747b-de76-4639-ae32-2605f3ff20b2",
-};
+  "@id": "urn:uuid:1db8c9be-032e-434c-a193-a64954fa2f4d"
+}
+
 
 function convertJsonStructure(input: CustomDataNode): ConvertedJsonStructure {
   const convertedStructure: ConvertedJsonStructure = {};
@@ -184,40 +173,34 @@ function convertJsonStructure(input: CustomDataNode): ConvertedJsonStructure {
   return convertedStructure;
 }
 
-function convertJsonLDStructure(
-  input: CustomDataNode
-): ConvertedJsonLDStructure {
-  const convertedStructure: ConvertedJsonLDStructure = {};
 
-  // Main object conversion
-  convertedStructure[input.name] = {
-    "@id": "polygon-vocab:" + input.name,
-    "@context": {},
+
+function convertJsonLDStructure(input: CustomDataNode): ConvertedJsonLDStructure {
+  const convertedStructure: ConvertedJsonLDStructure = {
+    "@id": `polygon-vocab:${input.name}`,
   };
-
-  // Process children recursively
-  if (input.children && input.children.length > 0) {
-    input.children.forEach((child) => {
-      // Recursive conversion for nested properties
-      if (child.dataType === "object") {
+  if (input.dataType === "object") {
+    convertedStructure["@context"] = {};
+    if (input.children && input.children.length > 0) {
+      input.children.forEach((child) => {
         const nestedObject = convertJsonLDStructure(child);
-        convertedStructure[input.name]["@context"] = {
-          ...convertedStructure[input.name]["@context"],
-          ...nestedObject,
+        convertedStructure["@context"] = {
+          ...convertedStructure["@context"],
+          [child.name]: nestedObject,
         };
-      } else {
-        // Handle primitive types
-        convertedStructure[input.name]["@context"]![child.name] = {
-          "@id": "polygon-vocab:" + child.name,
-          "@type":
-            "xsd:" + (child.dataType === "number" ? "double" : child.dataType),
-        };
-      }
-    });
+      });
+    }
+  } else if (input.dataType === "number") {
+    convertedStructure["@type"] = "xsd:double";
+  }
+  else {
+    convertedStructure["@type"] = `xsd:${input.dataType}`;
   }
 
   return convertedStructure;
 }
+
+
 
 function finalJsonMaker(input: CustomDataNode, formData: FormData) {
   const convertedStructure = convertJsonStructure(input);
@@ -234,30 +217,33 @@ function finalJsonMaker(input: CustomDataNode, formData: FormData) {
       ...jsonTemplate.properties,
       ...convertedStructure,
     },
-    required: convertedStructure[input.name].required,
+    required: [
+      "credentialSubject",
+      "@context",
+      "id",
+      "issuanceDate",
+      "issuer",
+      "type",
+      "credentialSchema"
+    ]
   };
 
   return finalJson;
 }
 
 function finalJsonLDMaker(input: CustomDataNode, formData: FormData) {
-  const convertedStructure = convertJsonLDStructure(input);
-  if (convertedStructure.credentialSubject["@context"]) {
-    delete convertedStructure.credentialSubject["@context"].id;
+  const tempJsonLDSchemaContext = { ...jsonLDSchemaContext };
+  const finalJsonLD = jsonLDTemplate;
+  const inputWithout1stChild = { ...input };
+  inputWithout1stChild.children = inputWithout1stChild.children?.slice(1);
+  tempJsonLDSchemaContext["@context"] = {
+    ...tempJsonLDSchemaContext["@context"],
+    ...convertJsonLDStructure(inputWithout1stChild)["@context"]
+  };
+  finalJsonLD["@context"][0] = {
+    ...finalJsonLD["@context"][0],
+    [formData.schemaType]: tempJsonLDSchemaContext
   }
-  let LDContext = LDContextTemplate;
-  LDContext = {
-    ...LDContext,
-    "@context": {
-      ...LDContext["@context"],
-      ...convertedStructure.credentialSubject["@context"],
-    },
-  };
-  const schemaType = formData.schemaType;
-  const finalJsonLD = {
-    ...jsonLDTemplate["@context"][0],
-    [schemaType]: LDContext,
-  };
 
   return { "@context": [finalJsonLD] };
 }

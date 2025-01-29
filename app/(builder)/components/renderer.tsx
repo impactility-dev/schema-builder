@@ -5,8 +5,9 @@ import Step1 from "./step1";
 import Step2 from "./step2";
 import { TreeDataNode } from "antd";
 import { v4 as uuidv4 } from "uuid";
-import { File, Folder } from "lucide-react";
+import { Copy, Download, File, Folder } from "lucide-react";
 import Preview from "./preview";
+import toast, { Toaster } from "react-hot-toast";
 import {
   Select,
   SelectContent,
@@ -37,7 +38,7 @@ export interface CustomDataNode extends TreeDataNode {
 const seedTreeData: CustomDataNode[] = [
   {
     name: "credentialSubject",
-    title: "Credential Subject",
+    title: "Credential subject",
     description: "Stores the data of the credential",
     key: uuidv4(),
     icon: <Folder size={15} className="mt-[0.35rem]" />,
@@ -86,9 +87,24 @@ const Renderer = () => {
     );
   }, [treeData, formData, isViewJson]);
 
+  const [code, setCode] = useState("");
+
+  useEffect(() => {
+    setCode(
+      JSON.stringify(
+        isViewJson
+          ? finalJsonMaker(treeData[0], formData)
+          : finalJsonLDMaker(treeData[0], formData),
+        null,
+        2
+      )
+    );
+  }, [formData, treeData, isViewJson]);
+
   return (
-    <div className="h-[calc(100vh-170px)] py-4">
-      <div className="grid grid-cols-2 gap-6 h-full">
+    <div className="h-[700px] py-6">
+      <div><Toaster /></div>
+      <div className="grid grid-cols-2 gap-8 h-full">
         <div className="overflow-auto" id="left">
           {step === 1 ? (
             <Step1
@@ -104,10 +120,10 @@ const Renderer = () => {
             />
           )}
         </div>
-        <div className="overflow-hidden flex flex-col" id="right">
-          <div className="flex justify-between items-center pb-4">
-            <h1 className="text-md font-bold">Preview</h1>
-            <div className="pr-4">
+        <div className="overflow-auto max-h-full" id="right">
+          <div className="flex justify-between items-center pb-8">
+            <h1 className="text-md font-bold pb-4">Preview</h1>
+            <div className="pr-4 flex gap-2">
               <Select
                 value={isViewJson ? "json" : "jsonLD"}
                 onValueChange={(value) => setIsViewJson(value === "json")}
@@ -120,41 +136,55 @@ const Renderer = () => {
                   <SelectItem value="jsonLD">Json-ld</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-          </div>
-          <div className="overflow-auto flex-1">
-            <Preview text={copyData} />
-          </div>
-          <div className="flex justify-between items-center pt-8">
-            <div></div>
-            <div className="flex space-x-4">
-              <Button
-                onClick={() => {
-                  navigator.clipboard.writeText(copyData);
-                }}
-                variant={"outline"}
-              >
+
+              <Button variant="outline" disabled={
+                formData.title === ""
+              } onClick={() => {
+                navigator.clipboard.writeText(
+                  code
+                ).then(() => {
+                  toast.success("Copied to clipboard");
+                });
+
+              }}>
                 Copy
+                <Copy size={15} className="ml-2" />
               </Button>
               <Button
+                disabled={
+                  formData.title === ""
+                }
                 onClick={() => {
-                  const blob = new Blob([copyData], {
-                    type: "text/plain",
-                  });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `${formData.schemaType || "credential"}.${
-                    isViewJson ? "json" : "jsonld"
-                  }`;
-                  a.click();
-                }}
-                disabled={!copyData || formData.schemaType === ""}
-              >
-                Download {isViewJson ? "Json" : "Jsonld"} File
+                  const element = document.createElement("a");
+                  const file = new Blob(
+                    [
+                      code
+                    ],
+                    { type: "application/json" }
+                  );
+                  element.href = URL.createObjectURL(file);
+                  element.download = isViewJson ? `${formData.title}_json.json` : `${formData.title}_json-ld.jsonld`;
+                  document.body.appendChild(element);
+                  element.click()
+                  toast.success("Downloaded");
+                }}>
+                Download
+                <Download size={15} className="ml-2" />
               </Button>
             </div>
           </div>
+          {step === 1 ? (
+            <div className="text-center">
+              <h1 className="text-lg font-bold">Fill the form to preview</h1>
+            </div>
+          ) : (
+            <Preview
+              formData={formData}
+              treeData={treeData}
+              isViewJson={isViewJson}
+            />
+          )}
+
         </div>
       </div>
     </div>

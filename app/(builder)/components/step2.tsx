@@ -136,40 +136,32 @@ const Step2: React.FC<Step2Props> = ({ setStep, treeData, setTreeData }) => {
 
   return (
     <div>
-      <div className="flex justify-between items-center">
-        <div></div>
-        <div className="flex gap-4">
-          <Button
-            disabled={
-              selectedNode === null || selectedNode.dataType !== "object"
-            }
-            onClick={() => {
-              const tree = treeData[0];
+      <div className="flex gap-2">
+        <Button
+          disabled={selectedNode === null || selectedNode.dataType !== "object"}
+          onClick={() => {
+            const tree = treeData[0];
 
-              findAndAdd(tree);
-              setTreeData([tree]);
-            }}
-          >
-            Add
-          </Button>
-          <Button
-            disabled={
-              selectedNode === null ||
-              selectedNode.name === "id" ||
-              selectedNode.name === "credentialSubject"
-            }
-            onClick={() => {
-              const tree = treeData[0];
-
-              findAndRemove(tree);
-              setTreeData([tree]);
-            }}
-            variant={"destructive"}
-          >
-            Remove
-          </Button>
-        </div>
-      </div>
+            findAndAdd(tree);
+            setTreeData([tree]);
+          }}
+        >
+          Add
+        </Button>
+        <Button
+          disabled={
+            selectedNode === null ||
+            selectedNode.name === "id" ||
+            selectedNode.name === "credentialSubject"
+          }
+          onClick={() => {
+            const tree = treeData[0];
+            findAndRemove(tree);
+            setTreeData([tree]);
+          }}
+        >
+          Remove
+        </Button></div>
       <Tree
         defaultExpandAll
         autoExpandParent
@@ -283,15 +275,9 @@ const Step2: React.FC<Step2Props> = ({ setStep, treeData, setTreeData }) => {
               </FormItem>
             )}
           />
-          <div className="flex justify-between">
-            <div></div>
-            <div className="flex gap-4">
-              <Button onClick={() => setStep(1)} variant={"outline"}>
-                Back
-              </Button>
-              <Button type="submit">Save</Button>
-            </div>
-          </div>
+          <div className="flex gap-2">
+            <Button onClick={() => setStep(1)}>Back</Button>
+            <Button type="submit">Save</Button></div>
         </form>
       </Form>
     </div>
