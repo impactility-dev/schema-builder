@@ -22,6 +22,7 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.468.0",
     "next": "15.0.4",
+    "rc-motion": "^2.9.5",
     "rc-resize-observer": "^1.4.3",
     "react": "^19.0.0",
     "react-code-blocks": "^0.1.6",

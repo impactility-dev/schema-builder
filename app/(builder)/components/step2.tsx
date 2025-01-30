@@ -42,16 +42,18 @@ interface Step2Props {
 }
 
 const Step2: React.FC<Step2Props> = ({ setStep, treeData, setTreeData }) => {
-  const [selectedNode, setSelectedNode] = useState<CustomDataNode | null>(null);
+  const [selectedNode, setSelectedNode] = useState<CustomDataNode>(
+    treeData[0]
+  );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      title: "",
-      dataType: "string",
-      description: "",
-      required: false,
+      name: selectedNode.name,
+      title: selectedNode.title,
+      dataType: selectedNode.dataType,
+      description: selectedNode.description,
+      required: selectedNode.required,
     },
   });
 
@@ -83,7 +85,14 @@ const Step2: React.FC<Step2Props> = ({ setStep, treeData, setTreeData }) => {
           return false;
         }
         findAndRemove(child);
-        setSelectedNode(null);
+        setSelectedNode(treeData[0]);
+        form.reset({
+          name: treeData[0].name,
+          title: treeData[0].title,
+          dataType: treeData[0].dataType,
+          description: treeData[0].description,
+          required: treeData[0].required,
+        });
         return true;
       });
     }
@@ -171,7 +180,15 @@ const Step2: React.FC<Step2Props> = ({ setStep, treeData, setTreeData }) => {
         showLine
         switcherIcon={<DownOutlined />}
         onSelect={onSelect}
+        defaultSelectedKeys={[treeData[0].key]}
+        selectedKeys={[selectedNode.key]}
         treeData={treeData}
+        titleRender={(node) => (
+          <span>
+            {node.name}{" "}
+            {node.required && <span className="text-red-500">*</span>}
+          </span>
+        )}
       />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -278,7 +295,11 @@ const Step2: React.FC<Step2Props> = ({ setStep, treeData, setTreeData }) => {
           />
           <div className="flex gap-2 justify-end">
             <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
-            <Button type="submit">Save</Button></div>
+            <Button type="submit" disabled={
+              selectedNode === null ||
+              selectedNode.name === "id" ||
+              selectedNode.name === "credentialSubject"
+            }>Save</Button></div>
         </form>
       </Form>
     </div>
