@@ -14,7 +14,7 @@ interface ConvertedJsonStructure {
 interface ConvertedJsonLDStructure {
   "@context"?: {
     [key: string]: ConvertedJsonLDStructure;
-  }
+  };
   "@id": string;
   "@type"?: string;
 }
@@ -121,11 +121,10 @@ const jsonLDSchemaContext = {
     "@propagate": true,
     "@protected": true,
     "polygon-vocab": "urn:uuid:8301b386-484d-4845-80cf-8491802bb228#",
-    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    xsd: "http://www.w3.org/2001/XMLSchema#",
   },
-  "@id": "urn:uuid:1db8c9be-032e-434c-a193-a64954fa2f4d"
-}
-
+  "@id": "urn:uuid:1db8c9be-032e-434c-a193-a64954fa2f4d",
+};
 
 function convertJsonStructure(input: CustomDataNode): ConvertedJsonStructure {
   const convertedStructure: ConvertedJsonStructure = {};
@@ -173,9 +172,9 @@ function convertJsonStructure(input: CustomDataNode): ConvertedJsonStructure {
   return convertedStructure;
 }
 
-
-
-function convertJsonLDStructure(input: CustomDataNode): ConvertedJsonLDStructure {
+function convertJsonLDStructure(
+  input: CustomDataNode
+): ConvertedJsonLDStructure {
   const convertedStructure: ConvertedJsonLDStructure = {
     "@id": `polygon-vocab:${input.name}`,
   };
@@ -192,15 +191,12 @@ function convertJsonLDStructure(input: CustomDataNode): ConvertedJsonLDStructure
     }
   } else if (input.dataType === "number") {
     convertedStructure["@type"] = "xsd:double";
-  }
-  else {
+  } else {
     convertedStructure["@type"] = `xsd:${input.dataType}`;
   }
 
   return convertedStructure;
 }
-
-
 
 function finalJsonMaker(input: CustomDataNode, formData: FormData) {
   const convertedStructure = convertJsonStructure(input);
@@ -224,8 +220,8 @@ function finalJsonMaker(input: CustomDataNode, formData: FormData) {
       "issuanceDate",
       "issuer",
       "type",
-      "credentialSchema"
-    ]
+      "credentialSchema",
+    ],
   };
 
   return finalJson;
@@ -238,13 +234,13 @@ function finalJsonLDMaker(input: CustomDataNode, formData: FormData) {
   inputWithout1stChild.children = inputWithout1stChild.children?.slice(1);
   tempJsonLDSchemaContext["@context"] = {
     ...tempJsonLDSchemaContext["@context"],
-    ...convertJsonLDStructure(inputWithout1stChild)["@context"]
+    ...convertJsonLDStructure(inputWithout1stChild)["@context"],
   };
   finalJsonLD["@context"][0] = {
     ...finalJsonLD["@context"][0],
-    [formData.schemaType]: tempJsonLDSchemaContext
-  }
+    [formData.schemaType]: tempJsonLDSchemaContext,
+  };
 
-  return { "@context": [finalJsonLD] };
+  return finalJsonLD;
 }
 export { finalJsonMaker, finalJsonLDMaker };
