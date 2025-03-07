@@ -5,7 +5,7 @@ import Step1 from "./step1";
 import Step2 from "./step2";
 import { TreeDataNode } from "antd";
 import { v4 as uuidv4 } from "uuid";
-import { Copy, Download, File, Folder } from "lucide-react";
+import { Copy, Download, File, Folder, Save } from "lucide-react";
 import Preview from "./preview";
 import toast, { Toaster } from "react-hot-toast";
 import {
@@ -86,6 +86,42 @@ const Renderer = () => {
     );
   }, [formData, treeData, isViewJson]);
 
+  const handleSaveSchema = async () => {
+    try {
+      // Prepare the data to be saved
+      const schemaData = {
+        title: formData.title,
+        schemaType: formData.schemaType,
+        version: formData.version,
+        description: formData.description,
+        credentialType: formData.credentialType,
+        schema: isViewJson
+          ? finalJsonMaker(treeData[0], formData)
+          : finalJsonLDMaker(treeData[0], formData),
+        format: isViewJson ? "json" : "jsonLD"
+      };
+
+      // Send the data to the API endpoint
+      const response = await fetch('/api/schemas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(schemaData),
+      });
+
+      if (response.ok) {
+        toast.success("Schema saved successfully");
+      } else {
+        const errorData = await response.json();
+        toast.error(`Failed to save schema: ${errorData.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error saving schema:', error);
+      toast.error("Failed to save schema. Please try again.");
+    }
+  };
+
   return (
     <div className="h-[calc(100vh-104px)] py-4">
       <div><Toaster /></div>
@@ -130,7 +166,6 @@ const Renderer = () => {
                 ).then(() => {
                   toast.success("Copied to clipboard");
                 });
-
               }}>
                 Copy
                 <Copy size={15} className="ml-2" />
@@ -155,6 +190,13 @@ const Renderer = () => {
                 }}>
                 Download
                 <Download size={15} className="ml-2" />
+              </Button>
+              <Button
+                disabled={formData.title === ""}
+                onClick={handleSaveSchema}
+              >
+                Save
+                <Save size={15} className="ml-2" />
               </Button>
             </div>
           </div>
