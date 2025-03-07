@@ -32,14 +32,8 @@ export async function POST(req: { [x: string]: any; json: () => any }) {
     const body = await req.json();
     const { name, schemaId, json, jsonLd, orgId } = body;
 
-    const protocol = req.headers.get("x-forwarded-proto");
-    const hostUrl = `${protocol}://${req.headers.get("host")}`;
-    console.log("hostUrl", hostUrl);
-    console.log(
-      "body.$metadata.uris.jsonLdContext : ",
-      body.json.$metadata.uris.jsonLdContext
-    );
-    body.json.$metadata.uris.jsonLdContext = `${hostUrl}/api/schemas/jsonLd/${schemaId}`;
+    // Update the JSON-LD context URL to point to the schema
+    body.json.$metadata.uris.jsonLdContext = `${process.env.HOST_URL}/api/schemas/jsonLd/${schemaId}`;
 
     if (!name || !schemaId || !json || !jsonLd || !orgId) {
       return NextResponse.json(
