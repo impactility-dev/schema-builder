@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import logo from "@/assets/Energy ID.png";
+import Image from "next/image";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -25,16 +27,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap"
-          rel="stylesheet"
-        />
-      </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased font-lato`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <div className="flex justify-between px-10 py-2 border border-b-1 items-center">
+          <Image src={logo} alt="Energy ID" height={24} />
+          <h1 className="text-lg font-bold">Schema Builder</h1>
+        </div>
         <div className="bg-neutral-100">{children}</div>
       </body>
     </html>
